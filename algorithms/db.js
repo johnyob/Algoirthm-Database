@@ -36,6 +36,7 @@ class Database {
         }
         rows.push(row);
       }, () => {
+        this.close();
         resolve(rows);
       });
     });
@@ -100,7 +101,7 @@ class Database {
    */
 
   _commit(sql, parameters) {
-    this._connection.run(sql, parameters error => {
+    this._connection.run(sql, parameters, error => {
       if (error) {
         throw new Error(error.message);
       }
@@ -110,8 +111,8 @@ class Database {
 }
 
 /**
- *
- * @method module.exports.connect
+ * Creates a Database object wrapped in a promise
+ * @function module.exports.connect
  * @param {String} file file path for database file (.db)
  * @return {Promise} creates new sqlite.Database connect and then instantiates
  * a Database object
@@ -125,5 +126,5 @@ module.exports.connect = (file) => {
         throw new Error(error.message) ;
       }
     }));
-  }).then(db => Database(db));
+  }).then(db => new Database(db));
 };
