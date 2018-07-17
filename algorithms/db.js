@@ -1,14 +1,36 @@
 const sqlite = require("sqlite3");
 
+/**
+ * Wrapper for sqlite3.Database connection. Contains methods for common SQL
+ * commands
+ * @class
+ */
+
 class Database {
+
+  /**
+   * Constructor used to instantiate the Database object. Initializes property
+   * (Private) _connection.
+   * @constructor
+   * @param {sqlite.Database} connection sqlite3 database connection object
+   */
+
   constructor(connection) {
-    this.connection = connection;
+    this._connection = connection;
   }
+
+  /**
+   * (Public) method for executing a SQL query.
+   * @method Database.query
+   * @param {String} sql SQL query to execute
+   * @param {Array} parameters parameters to replace placeholders in sql
+   * @param {Promise}
+   */
 
   query(sql, parameters) {
     return new Promise((resolve, reject) => {
       let rows = [];
-      this.connection.each(sql, parameters, (error, row) => {
+      this._connection.each(sql, parameters, (error, row) => {
         if (error) {
           throw new Error(error.message);
         }
@@ -19,27 +41,66 @@ class Database {
     });
   }
 
+  /**
+   * (Public) method for closing database connection.
+   * @method Database.close
+   */
+
   close() {
-    this.connection.close();
+    this._connection.close();
   }
+
+  /**
+   * (Public) wrapper for Database._commit method.
+   * @method Database.insert
+   * @param {String} sql SQL command to execute
+   * @param {Array} parameters parameters to replace placeholders in sql
+   * @param {Database} this Database object
+   */
 
   insert(sql, parameters) {
     return this._commit(sql, parameters);
   }
 
+  /**
+   * (Public) wrapper for Database._commit method.
+   * @method Database.delete
+   * @param {String} sql SQL command to execute
+   * @param {Array} parameters parameters to replace placeholders in sql
+   * @param {Database} this Database object
+   */
+
   delete(sql, parameters) {
     return this._commit(sql, parameters);
   }
 
+  /**
+   * (Public) wrapper for Database._commit method.
+   * @method Database.update
+   * @param {String} sql SQL command to execute
+   * @param {Array} parameters parameters to replace placeholders in sql
+   * @param {Database} this Database object
+   */
+
   update(sql, parameters) {
     return this._commit(sql, parameters)
   }
+
   /**
-  * Helper Methods
-  */
+   * Helper Methods
+   */
+
+  /**
+   * (Private) commit method, executes SQL command and commit changes to
+   * database.
+   * @method Database._commit
+   * @param {String} sql SQL command to execute
+   * @param {Array} parameters parameters to replace placeholders in sql
+   * @param {Database} this Database object
+   */
 
   _commit(sql, parameters) {
-    this.connection.run(sql, parameters error => {
+    this._connection.run(sql, parameters error => {
       if (error) {
         throw new Error(error.message);
       }
@@ -48,55 +109,21 @@ class Database {
   }
 }
 
+/**
+ *
+ * @method module.exports.connect
+ * @param {String} file file path for database file (.db)
+ * @return {Promise} creates new sqlite.Database connect and then instantiates
+ * a Database object
+ */
 
 
-var database = (db) => {
-  var query = (sql, parameters) => {
-    return new Promise((resolve, reject) => {
-      let rows = [];
-      db.each(sql, parameters, (error, row) => {
-        if (error) {
-          throw new Error(error.message);
-        }
-        rows.push(row)
-      }, () => {
-        db.close()
-        resolve(rows)
-      });
-    });
-  };
-
-  var close = () => {
-    db.close();
-  };
-
-  var commit = (sql, parameters, final=false) => {
-    db.run(sql, parameters, error => {
-      if (error) {
-        throw new Error(error.message);
-      }
-    });
-    return dbFunctions;
-  };
-
-  const dbFunctions = {
-    query: query,
-    insert: commit,
-    delete: commit,
-    update: commit,
-    close: close
-  };
-
-  return dbFunctions;
-};
-
-
-module.exports.connect = (dbFile) => {
+module.exports.connect = (file) => {
   return new Promise((resolve, reject) => {
-    resolve(new sqlite.Database(dbFile, error => {
+    resolve(new sqlite.Database(file, error => {
       if (error) {
         throw new Error(error.message) ;
       }
     }));
-  }).then(db => database(db));
+  }).then(db => Database(db));
 };
