@@ -1,7 +1,11 @@
-const database = require("./db");
-var createTables = () => {
-  var create = (sql) => {
-    database.connect().then(db => db.insert(sql)).then(db => db.close()).catch(error => console.log(error));
+const database = require("../db");
+const DB = "./Algorithms.db";
+
+function createTables() {
+  function create(sql) {
+    database.connect(DB).then(db => db.insert(sql)).then(
+      db => db.close()
+    ).catch(error => console.log(error));
   }
 
   create(
@@ -29,7 +33,7 @@ var createTables = () => {
     + "  FOREIGN KEY (CategoryID) REFERENCES Category (CategoryID)"
     + ");"
   );
-};
+}
 
 module.exports = () => {
   createTables();

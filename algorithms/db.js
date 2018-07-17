@@ -1,5 +1,54 @@
 const sqlite = require("sqlite3");
-const ALGORTIHM_DATABASE = "./Algorithms.db";
+
+class Database {
+  constructor(connection) {
+    this.connection = connection;
+  }
+
+  query(sql, parameters) {
+    return new Promise((resolve, reject) => {
+      let rows = [];
+      this.connection.each(sql, parameters, (error, row) => {
+        if (error) {
+          throw new Error(error.message);
+        }
+        rows.push(row);
+      }, () => {
+        resolve(rows);
+      });
+    });
+  }
+
+  close() {
+    this.connection.close();
+  }
+
+  insert(sql, parameters) {
+    return this._commit(sql, parameters);
+  }
+
+  delete(sql, parameters) {
+    return this._commit(sql, parameters);
+  }
+
+  update(sql, parameters) {
+    return this._commit(sql, parameters)
+  }
+  /**
+  * Helper Methods
+  */
+
+  _commit(sql, parameters) {
+    this.connection.run(sql, parameters error => {
+      if (error) {
+        throw new Error(error.message);
+      }
+    });
+    return this;
+  }
+}
+
+
 
 var database = (db) => {
   var query = (sql, parameters) => {
@@ -42,11 +91,11 @@ var database = (db) => {
 };
 
 
-module.exports.connect = () => {
+module.exports.connect = (dbFile) => {
   return new Promise((resolve, reject) => {
-    resolve(new sqlite.Database(ALGORTIHM_DATABASE, error => {
+    resolve(new sqlite.Database(dbFile, error => {
       if (error) {
-        throw new Error(error.message);
+        throw new Error(error.message) ;
       }
     }));
   }).then(db => database(db));

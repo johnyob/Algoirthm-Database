@@ -1,8 +1,10 @@
 const wikipedia = require("mediawiki-api-js");
-const database = require("./db");
+const database = require("../db");
 const ddl = require("./ddl");
 
 const MAX_DEPTH = 3;
+const DB = "./Algorithms.db";
+
 const HEURISTIC_IDENTIFIERS = [ //heuristic
   "algorithm", "Algorithm",
   "data structure", "Data structure",
@@ -36,7 +38,7 @@ var isAlgorithmPage = (page) => {
  * Functions
  */
 
-var handleCategory = (id, category) => database.connect().then(db => db.insert(
+var handleCategory = (id, category) => database.connect(DB).then(db => db.insert(
     "INSERT OR IGNORE INTO Category(CategoryTitle) "
   + "VALUES (?);", [category]
 )).then(db => db.insert(
@@ -49,7 +51,7 @@ var handleCategory = (id, category) => database.connect().then(db => db.insert(
   + "WHERE CategoryID IS NULL;", []
 )).then(db => db.close());
 
-var parsePage = page => page.summary.then(summary => database.connect().then(db => db.insert(
+var parsePage = page => page.summary.then(summary => database.connect(DB).then(db => db.insert(
     "INSERT OR IGNORE INTO Algorithm "
   + "VALUES (?, ?, ?);",
     [page.id, page.title, summary]
@@ -71,7 +73,7 @@ var parseCategory = (category, depth, visited) => {
     if (isAlgorithmCategory(page)) {
       console.log("[INFO] Category: " + category);
 
-      database.connect().then(db => db.insert(
+      database.connect(DB).then(db => db.insert(
           "INSERT OR IGNORE INTO Category(CategoryTitle) "
         + "VALUES (?);", [page]
       )).then(db => db.close());
@@ -89,8 +91,9 @@ var parseCategory = (category, depth, visited) => {
 };
 
 ddl();
+
 var category = "Category:Sorting_algorithms";
 //used to reduce timeout
-database.connect().then(db => db.query(
+database.connect(DB).then(db => db.query(
   "SELECT AlgorithmTitle FROM Algorithm;", []
 )).then(visited => parseCategory(category, 0, visited));
